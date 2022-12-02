@@ -8,4 +8,5 @@ export const OUTPUT_VIDEO = "body-output-video"
 export const PERFORMANCE_ALL_SPAN = "performance-all-span"
 export const PERFORMANCE_INFER_SPAN = "performance-infer-span"
 export const PROGRESS_SPAN = "progress-span"
+export const STATUS_SPAN = "status-span"
 

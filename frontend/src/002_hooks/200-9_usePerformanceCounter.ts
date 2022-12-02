@@ -1,5 +1,5 @@
 import { useRef } from "react"
-import { PERFORMANCE_ALL_SPAN, PERFORMANCE_INFER_SPAN, PROGRESS_SPAN } from "../const";
+import { PERFORMANCE_ALL_SPAN, PERFORMANCE_INFER_SPAN, PROGRESS_SPAN, STATUS_SPAN } from "../const";
 
 const PerformancCounter_num = 3
 
@@ -36,11 +36,18 @@ export const usePerformanceCounter = () => {
         // console.log("UPDATE Progress!")
     }
 
+    const _updateStatusMessage = (val: string) => {
+        const span = document.getElementById(STATUS_SPAN) as HTMLSpanElement
+        span.innerText = `${val}`
+
+    }
+
 
     const returnValue = {
         _updatePerfCounterInference,
         _updatePerfCounterAll,
-        _updateProgress
+        _updateProgress,
+        _updateStatusMessage,
     };
     return returnValue;
 };

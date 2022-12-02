@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { EngineType, InputShape } from "../../002_hooks/200_useInference";
 import { useAppState } from "../../003_provider/003_AppStateProvider";
-import { OUTPUT_VIDEO, PERFORMANCE_ALL_SPAN, PERFORMANCE_INFER_SPAN, PROGRESS_SPAN } from "../../const";
+import { OUTPUT_VIDEO, PERFORMANCE_ALL_SPAN, PERFORMANCE_INFER_SPAN, PROGRESS_SPAN, STATUS_SPAN } from "../../const";
 import { useFileInput } from "../003_hooks/useFileInput";
 import JSZip from "jszip";
 
@@ -101,8 +101,16 @@ export const InputSourceSelector = () => {
     const progressRow = useMemo(() => {
         return (
             <div className="sidebar-content-row-5-5">
-                <div className="sidebar-content-row-label pad-left-1">Status:</div>
+                <div className="sidebar-content-row-label pad-left-1">Progress:</div>
                 <div className="sidebar-content-row-label"><span id={PROGRESS_SPAN}></span>%</div>
+            </div>
+        )
+    }, [])
+
+    const StatusRow = useMemo(() => {
+        return (
+            <div className="sidebar-content-row">
+                <div className="sidebar-content-row-label pad-left-1"><span id={STATUS_SPAN}></span></div>
             </div>
         )
     }, [])
@@ -332,6 +340,7 @@ export const InputSourceSelector = () => {
             {performanceAllRow}
             {performanceInferenceRow}
             {progressRow}
+            {StatusRow}
             <div className="sidebar-content-row-dividing"></div>
             <div className="sidebar-content-row-label-header">
                 Operation

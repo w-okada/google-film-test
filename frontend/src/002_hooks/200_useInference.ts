@@ -79,7 +79,7 @@ export type InferenceStateAndMethod = InferenceState & {
 }
 
 export const useInference = (): InferenceStateAndMethod => {
-    const { _updatePerfCounterAll, _updatePerfCounterInference, _updateProgress } = usePerformanceCounter()
+    const { _updatePerfCounterAll, _updatePerfCounterInference, _updateProgress, _updateStatusMessage } = usePerformanceCounter()
     const processIdRef = useRef<number>(0)
     const [processId, _setProcessId] = useState<number>(processIdRef.current)
     const setProcessId = (val: number) => {
@@ -207,12 +207,12 @@ export const useInference = (): InferenceStateAndMethod => {
     }
 
 
-
     const stopProcess = async () => {
         processIdRef.current = 0
         setProcessId(processIdRef.current)
     }
 
+    const sessionRef = useRef<tf.GraphModel>()
     const startProcess = async (processId: number) => {
         // Params for GUI
         //// ProcessId
@@ -227,16 +227,41 @@ export const useInference = (): InferenceStateAndMethod => {
         // const modelFilePath = `./models/onnx/film_net_L1_HxW.onnx` // Note: ONNX return error "Cannot read properties of undefined (reading 'byteLength')" 
 
         // Create Session
-        const session = await tf.loadGraphModel(modelFilePath);
+        if (!sessionRef.current) {
+            _updateStatusMessage("Loding model...")
+            sessionRef.current = await tf.loadGraphModel(modelFilePath);
+            _updateStatusMessage("Warming up...")
+            await new Promise<void>((resolve) => {
+                // requestAnimationFrame(() => { resolve() })
+                setTimeout(resolve, 100)
+            })
+            const identityIndex = sessionRef.current.outputNodes.findIndex(x => { return x === "Identity:0" })
+            console.log("Film:Index", identityIndex)
+            const dummyCanvas1 = document.createElement("canvas")
+            dummyCanvas1.width = inputShapeArray[1]
+            dummyCanvas1.height = inputShapeArray[0]
+            const dummyCanvas2 = document.createElement("canvas")
+            dummyCanvas2.width = inputShapeArray[1]
+            dummyCanvas2.height = inputShapeArray[0]
+            tf.tidy(() => {
+                const start = tf.browser.fromPixels(dummyCanvas1).expandDims(0).asType("float32").div(255)
+                const end = tf.browser.fromPixels(dummyCanvas2).expandDims(0).asType("float32").div(255)
+                const time = tf.tensor([0.5]).expandDims(0)
+                const results = sessionRef.current!.predict([start, end, time]) as tf.Tensor[]
+                results[identityIndex].squeeze().arraySync() as number[][][]
+            })
+            _updateStatusMessage("Warming up complete")
+        }
+
         // const session = await InferenceSession.create(modelFilePath)
         // Show Session Information
         if (engineType == "tfjs") {
-            console.log("Film:", (session as tf.GraphModel).inputs)
-            console.log("Film:", (session as tf.GraphModel).inputNodes)
-            console.log("Film:", (session as tf.GraphModel).outputs)
-            console.log("Film:", (session as tf.GraphModel).outputNodes)
+            console.log("Film:", (sessionRef.current as tf.GraphModel).inputs)
+            console.log("Film:", (sessionRef.current as tf.GraphModel).inputNodes)
+            console.log("Film:", (sessionRef.current as tf.GraphModel).outputs)
+            console.log("Film:", (sessionRef.current as tf.GraphModel).outputNodes)
         }
-        const identityIndex = session.outputNodes.findIndex(x => { return x === "Identity:0" })
+        const identityIndex = sessionRef.current.outputNodes.findIndex(x => { return x === "Identity:0" })
         console.log("Film:Index", identityIndex)
 
         // Note: ONNX does not work
@@ -258,6 +283,7 @@ export const useInference = (): InferenceStateAndMethod => {
         const canvasNum = canvassRef.current.length - 1
         const perfCounterAll_start = performance.now()
         let progress = 0
+        _updateStatusMessage("Start generating...")
         for (let i = 0; i < timeToInterpolateRef.current; i++) {
             const newCanvass: HTMLCanvasElement[] = []
             for (let j = 1; j < canvassRef.current.length; j++) {
@@ -271,7 +297,7 @@ export const useInference = (): InferenceStateAndMethod => {
                     const time = tf.tensor([0.5]).expandDims(0)
                     const perfCounterInference_start = performance.now()
                     // const results = session.predict([time. start, end]) as tf.Tensor[] // PINTO's
-                    const results = session.predict([start, end, time]) as tf.Tensor[]
+                    const results = sessionRef.current!.predict([start, end, time]) as tf.Tensor[]
                     // const results = session.predict([start, time, end]) as tf.Tensor[]
                     const perfCounterInference_end = performance.now()
                     const perfCounterInference = perfCounterInference_end - perfCounterInference_start
@@ -363,6 +389,8 @@ export const useInference = (): InferenceStateAndMethod => {
         const perfCounterAll_end = performance.now()
         const perfCounterAll = perfCounterAll_end - perfCounterAll_start
         _updatePerfCounterAll(perfCounterAll)
+        _updateStatusMessage("Done")
+
     }
 
     const returnValue = {
