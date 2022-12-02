@@ -1,5 +1,5 @@
 {
-    "name": "yolox-onnx-test",
+    "name": "google-film-test",
     "version": "1.0.0",
     "description": "",
     "main": "index.js",
@@ -14,14 +14,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/w-okada/yolox-onnx-test.git"
+        "url": "git+https://github.com/w-okada/google-film-test.git"
     },
     "author": "",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/w-okada/yolox-onnx-test/issues"
+        "url": "https://github.com/w-okada/google-film-test/issues"
     },
-    "homepage": "https://github.com/w-okada/yolox-onnx-test#readme",
+    "homepage": "https://github.com/w-okada/google-film-test#readme",
     "dependencies": {
         "@ffmpeg/core": "^0.11.0",
         "@ffmpeg/ffmpeg": "^0.11.6",
