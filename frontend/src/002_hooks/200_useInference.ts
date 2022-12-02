@@ -10,7 +10,7 @@ import { useFfmpeg } from "./200-1_useFfmpeg";
 const DemoImage1 = require("../../../data/zun_g1.png")
 const DemoImage2 = require("../../../data/zun_g2.png")
 const DemoImage3 = require("../../../data/zun_g3.png")
-const DemoImage4 = require("../../../data/zun_g4.png")
+// const DemoImage4 = require("../../../data/zun_g4.png")
 
 
 export const EngineType = {
@@ -170,13 +170,9 @@ export const useInference = (): InferenceStateAndMethod => {
     useEffect(() => {
         const initGallary = async () => {
             await addKeyFrame(DemoImage1)
-            await addKeyFrame(DemoImage2)
             await addKeyFrame(DemoImage1)
-            await addKeyFrame(DemoImage2)
             await addKeyFrame(DemoImage3)
-            await addKeyFrame(DemoImage4)
             await addKeyFrame(DemoImage2)
-            await addKeyFrame(DemoImage1)
         }
         initGallary()
     }, [])
