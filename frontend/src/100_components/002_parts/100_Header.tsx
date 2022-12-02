@@ -10,7 +10,7 @@ export const Header = () => {
             </div>
 
             <div className="header-button-container">
-                <a className="header-button-link" href="https://github.com/w-okada/yolox-onnx-test" target="_blank" rel="noopener noreferrer">
+                <a className="header-button-link" href="https://github.com/w-okada/google-film-test" target="_blank" rel="noopener noreferrer">
                     <img src="./assets/icons/github.svg" />
                 </a>
                 <div className="header-button-spacer"></div>

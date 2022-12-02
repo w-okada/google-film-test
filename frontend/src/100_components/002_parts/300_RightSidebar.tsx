@@ -50,6 +50,7 @@ export const RightSidebar = () => {
 
     useEffect(() => {
         sidebarAccordionEditorControllerCheckBox.updateState(true);
+        sidebarAccordionLinksCheckBox.updateState(true)
     }, []);
 
     return (
