@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react"
-import { OUTPUT_GALLERY_DIV, } from "../const";
+import { OUTPUT_GALLERY_DIV, OUTPUT_VIDEO, } from "../const";
 
 require('@tensorflow/tfjs-backend-wasm');
 
 import * as tf from '@tensorflow/tfjs';
 // import { InferenceSession, Tensor } from "onnxruntime-web";
 import { usePerformanceCounter } from "./200-9_usePerformanceCounter";
+import { useFfmpeg } from "./200-1_useFfmpeg";
 const DemoImage1 = require("../../../data/zun_g1.png")
 const DemoImage2 = require("../../../data/zun_g2.png")
 const DemoImage3 = require("../../../data/zun_g3.png")
@@ -80,6 +81,7 @@ export type InferenceStateAndMethod = InferenceState & {
 
 export const useInference = (): InferenceStateAndMethod => {
     const { _updatePerfCounterAll, _updatePerfCounterInference, _updateProgress, _updateStatusMessage } = usePerformanceCounter()
+    const { generateMp4, ffmpeg } = useFfmpeg()
     const processIdRef = useRef<number>(0)
     const [processId, _setProcessId] = useState<number>(processIdRef.current)
     const setProcessId = (val: number) => {
@@ -175,10 +177,15 @@ export const useInference = (): InferenceStateAndMethod => {
             await addKeyFrame(DemoImage4)
             await addKeyFrame(DemoImage2)
             await addKeyFrame(DemoImage1)
-
         }
         initGallary()
     }, [])
+    useEffect(() => {
+        if (!ffmpeg) {
+            return
+        }
+        _setVideo()
+    }, [ffmpeg])
 
     const addKeyFrame = async (url: string) => {
         const shapeArray = inputShapeRef.current.split("x").map(x => { return Number(x) })
@@ -204,9 +211,17 @@ export const useInference = (): InferenceStateAndMethod => {
     const thinOutMiddle = async () => {
         canvassRef.current = canvassRef.current.filter((_x, index) => { return index % 2 == 0 })
         setCanvass([...canvassRef.current])
+        _setVideo()
     }
 
-
+    const _setVideo = async () => {
+        const movieUrl = await generateMp4(canvassRef.current)
+        if (!movieUrl) { return }
+        const video = document.getElementById(OUTPUT_VIDEO) as HTMLVideoElement
+        video.src = ""
+        video.srcObject = null
+        video.src = movieUrl
+    }
     const stopProcess = async () => {
         processIdRef.current = 0
         setProcessId(processIdRef.current)
@@ -391,6 +406,7 @@ export const useInference = (): InferenceStateAndMethod => {
         _updatePerfCounterAll(perfCounterAll)
         _updateStatusMessage("Done")
 
+        _setVideo()
     }
 
     const returnValue = {

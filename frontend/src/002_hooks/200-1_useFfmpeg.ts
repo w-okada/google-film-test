@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 export type FfmpegState = {
     isConverting: boolean
     convertProgress: number
+    ffmpeg: FFmpeg | undefined
 }
 
 export type FfmpegStateAndMethod = FfmpegState & {
@@ -12,8 +13,13 @@ export type FfmpegStateAndMethod = FfmpegState & {
 
 export const useFfmpeg = (): FfmpegStateAndMethod => {
     const ffmpegRef = useRef<FFmpeg>()
-    const [_ffmpeg, setFfmpeg] = useState<FFmpeg | undefined>(ffmpegRef.current);
-    const [isConverting, setIsConverting] = useState<boolean>(false)
+    const [ffmpeg, setFfmpeg] = useState<FFmpeg | undefined>(ffmpegRef.current);
+    const isConvertingRef = useRef<boolean>(false)
+    const [isConverting, _setIsConverting] = useState<boolean>(isConvertingRef.current)
+    const setIsConverting = (val: boolean) => {
+        isConvertingRef.current = val
+        _setIsConverting(isConvertingRef.current)
+    }
     const [convertProgress, setConvertProgress] = useState(0);
 
 
@@ -42,7 +48,7 @@ export const useFfmpeg = (): FfmpegStateAndMethod => {
             return;
         }
 
-        if (isConverting) {
+        if (isConvertingRef.current) {
             alert("already converting");
             return;
         }
@@ -70,6 +76,12 @@ export const useFfmpeg = (): FfmpegStateAndMethod => {
         cliArgs.shift()
         await ffmpegRef.current.run(...cliArgs);
         const data = ffmpegRef.current.FS("readFile", outputFilename);
+
+        for (let i = 0; i < canvass.length; i++) {
+            const numStr = i.toString().padStart(3, "0")
+            ffmpegRef.current.FS("unlink", `image_${numStr}.jpg`);
+        }
+
         setIsConverting(false);
         return URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }));
 
@@ -79,8 +91,7 @@ export const useFfmpeg = (): FfmpegStateAndMethod => {
         // a.download = outputFilename;
         // a.href = URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }));
         // a.click();
-        // setIsConverting(false);
     };
 
-    return { generateMp4, isConverting, convertProgress }
+    return { generateMp4, ffmpeg, isConverting, convertProgress }
 }

@@ -1,12 +1,12 @@
 import React, { useMemo } from "react";
 import { EngineType, InputShape } from "../../002_hooks/200_useInference";
 import { useAppState } from "../../003_provider/003_AppStateProvider";
-import { OUTPUT_VIDEO, PERFORMANCE_ALL_SPAN, PERFORMANCE_INFER_SPAN, PROGRESS_SPAN, STATUS_SPAN } from "../../const";
+import { PERFORMANCE_ALL_SPAN, PERFORMANCE_INFER_SPAN, PROGRESS_SPAN, STATUS_SPAN } from "../../const";
 import { useFileInput } from "../003_hooks/useFileInput";
 import JSZip from "jszip";
 
 export const InputSourceSelector = () => {
-    const { inferenceState, ffmpegState } = useAppState()
+    const { inferenceState } = useAppState()
     const { click } = useFileInput()
 
     /***********************
@@ -217,8 +217,8 @@ export const InputSourceSelector = () => {
         const buttonLabel = inferenceState.processId === 0 ? "add" : "stop."
         const buttonClass = inferenceState.processId === 0 ? "sidebar-content-row-button" : "sidebar-content-row-button-activated"
         const butonAction = inferenceState.processId === 0 ?
-            () => {
-                inferenceState.startProcess(new Date().getTime())
+            async () => {
+                await inferenceState.startProcess(new Date().getTime())
             }
             :
             () => {
@@ -238,9 +238,9 @@ export const InputSourceSelector = () => {
         const buttonLabel = "del"
         const buttonClass = "sidebar-content-row-button"
         const butonAction =
-            () => {
+            async () => {
                 if (inferenceState.processId !== 0) { return }
-                inferenceState.thinOutMiddle()
+                await inferenceState.thinOutMiddle()
             }
         return (
             <div className="sidebar-content-row-7-3">
@@ -250,61 +250,58 @@ export const InputSourceSelector = () => {
         )
     }, [inferenceState.processId])
 
-    const convertButtonRow = useMemo(() => {
-        const buttonLabel = ffmpegState.isConverting ? "stop" : "generate"
-        const buttonClass = ffmpegState.isConverting ? "sidebar-content-row-button-activated" : "sidebar-content-row-button"
-        const butonAction = ffmpegState.isConverting ?
-            () => {
-            }
-            :
-            async () => {
-                const url = await ffmpegState.generateMp4(inferenceState.canvass)
-                if (!url) { return }
-                const video = document.getElementById(OUTPUT_VIDEO) as HTMLVideoElement
-                video.src = ""
-                video.srcObject = null
-                video.src = url
-            }
+    // const convertButtonRow = useMemo(() => {
+    //     const buttonLabel = ffmpegState.isConverting ? "stop" : "generate"
+    //     const buttonClass = ffmpegState.isConverting ? "sidebar-content-row-button-activated" : "sidebar-content-row-button"
+    //     const butonAction = ffmpegState.isConverting ?
+    //         () => {
+    //         }
+    //         :
+    //         async () => {
+    //             const url = await ffmpegState.generateMp4(inferenceState.canvass)
+    //             if (!url) { return }
+    //             const video = document.getElementById(OUTPUT_VIDEO) as HTMLVideoElement
+    //             video.src = ""
+    //             video.srcObject = null
+    //             video.src = url
+    //         }
 
-        return (
-            <div className="sidebar-content-row-7-3">
-                <div className="sidebar-content-row-label">Generate mp4</div>
-                <div className={buttonClass} onClick={butonAction}>{buttonLabel}</div>
-            </div>
-        )
-    }, [inferenceState.canvass])
+    //     return (
+    //         <div className="sidebar-content-row-7-3">
+    //             <div className="sidebar-content-row-label">Generate mp4</div>
+    //             <div className={buttonClass} onClick={butonAction}>{buttonLabel}</div>
+    //         </div>
+    //     )
+    // }, [inferenceState.canvass])
 
     const downloadButtonRow = useMemo(() => {
-        const buttonLabel = ffmpegState.isConverting ? "stop" : "download"
-        const buttonClass = ffmpegState.isConverting ? "sidebar-content-row-button-activated" : "sidebar-content-row-button"
-        const butonAction = ffmpegState.isConverting ?
-            () => {
-            }
-            :
-            async () => {
-                const zip = new JSZip();
+        const buttonLabel = "download"
+        const buttonClass = "sidebar-content-row-button"
+        const butonAction = async () => {
+            if (inferenceState.processId !== 0) { return }
+            const zip = new JSZip();
 
-                for (let i = 0; i < inferenceState.canvass.length; i++) {
-                    const p = new Promise<Blob | null>((resolve) => {
-                        inferenceState.canvass[i].toBlob((x) => {
-                            resolve(x)
-                        }, "image/png")
-                    })
-                    const img = await p
-                    const numStr = i.toString().padStart(3, "0")
-                    zip.file(`${numStr}.png`, img!)
+            for (let i = 0; i < inferenceState.canvass.length; i++) {
+                const p = new Promise<Blob | null>((resolve) => {
+                    inferenceState.canvass[i].toBlob((x) => {
+                        resolve(x)
+                    }, "image/png")
+                })
+                const img = await p
+                const numStr = i.toString().padStart(3, "0")
+                zip.file(`${numStr}.png`, img!)
 
-                }
-                const blob = await zip.generateAsync({ type: "blob" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `images.zip`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
             }
+            const blob = await zip.generateAsync({ type: "blob" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `images.zip`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
 
         return (
             <div className="sidebar-content-row-7-3">
@@ -348,7 +345,7 @@ export const InputSourceSelector = () => {
             {/* {selectTimeToInterpolateRow} */}
             {interpolateButtonRow}
             {deleteButtonRow}
-            {convertButtonRow}
+            {/* {convertButtonRow} */}
             {downloadButtonRow}
 
 

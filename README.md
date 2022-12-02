@@ -1,4 +1,4 @@
-FILM 
+FILM Web Demo
 ----
 This repository is Tensorflowjs demo of [frame-interpolation from google research](https://github.com/google-research/frame-interpolation).
 
@@ -7,7 +7,7 @@ This repository is Tensorflowjs demo of [frame-interpolation from google researc
 
 [Web Demo](https://w-okada.github.io/google-film-test/)
 
-Note: This demo is very heavy. I strongly recommend access by the machine with GPU.
+Note: This demo is very heavy. I strongly recommend to access by the machine with GPU.
 
 
 
