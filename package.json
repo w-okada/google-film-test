@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "build:docker": "DOCKER_BUILDKIT=1 docker build -f docker/Dockerfile -t google-film-test docker/",
-        "export:model": "docker run --rm -ti -v `pwd`/data:/data -v `pwd`/models:/models google-film-test bash export_onnx.sh",
+        "export:model": "docker run --rm -ti -v `pwd`/data:/data -v `pwd`/models:/models google-film-test bash export_tfjs.sh",
         "clean": "rimraf docs/*",
         "webpack:frontend": "webpack --config webpack.frontend.config.js",
         "build:frontend": "run-s clean webpack:frontend",
